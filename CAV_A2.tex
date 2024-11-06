@@ -1,0 +1,147 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\title{Traffic Sign Classification Report}
+\author{Sakib Sadman Shajib}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+This report details my approach to building a Traffic Sign Classifier using Convolutional Neural Networks (CNNs). The goal was to classify images from the GTSRB - German Traffic Sign Recognition Benchmark dataset into 43 categories. Given the uncertainty in the assignment requirements, I developed both a fully custom CNN and a model based on the pre-trained \texttt{MobileNetV2}. Each approach was experimented with, modified, and tuned to achieve the best possible accuracy. In this report, I will discuss my step-by-step approach, the reasoning behind key decisions, and the observations from these experiments.
+
+\section{Tools and Setup}
+I utilized the following platforms and tools to develop and train the models:
+\begin{itemize}
+    \item \textbf{Kaggle and Google Colab}: These platforms provided GPU support, allowing me to run the model efficiently without local computational constraints.
+    \item \textbf{Local Environment}: The benchmark model was run on my personal laptop.
+    \item \textbf{Jupyter Notebook}: I used Jupyter Notebook to write my code and document my progress in an organized manner.
+\end{itemize}
+
+Libraries used include:
+\begin{itemize}
+    \item \texttt{tensorflow}, \texttt{keras}, \texttt{scikit-learn}, \texttt{numpy}, \texttt{matplotlib}
+\end{itemize}
+
+\section{Dataset}
+The dataset used was the GTSRB - German Traffic Sign Recognition Benchmark, which I downloaded from Kaggle. The dataset contains images of traffic signs categorized into 43 classes. Images were resized to $75 \times 75$ pixels to ensure compatibility with my model.
+
+\section{Initial Approach}
+Due to the uncertain nature of the assignment, I began by developing two distinct models:
+\begin{itemize}
+    \item A fully custom CNN model built from scratch.
+    \item A model based on the pre-trained model MobileNetV2 for feature extraction and classification.
+\end{itemize}
+
+\subsection{Custom CNN Model}
+The custom CNN model was designed with the following layers:
+\begin{itemize}
+    \item Multiple convolutional layers for feature extraction, each followed by ReLU activation.
+    \item MaxPooling layers to reduce the spatial dimensions and downsample the feature maps.
+    \item Dropout layers to reduce overfitting.
+    \item Dense layers to perform the final classification.
+\end{itemize}
+The custom model achieved an accuracy of $94.30\%$ with the following metrics:
+\begin{verbatim}
+Confusion Matrix:
+[[ 56   0   0 ...   0   0   0]
+ [  0 700   7 ...   0   0   0]
+ [  0   4 743 ...   0   0   0]
+ ...
+ [  0   1   0 ...  88   0   0]
+ [  0   0   0 ...   0  43   0]
+ [  0   0   0 ...   0   1  89]]
+Accuracy: 94.30%
+Precision: 0.95
+Recall: 0.94
+F1 Score: 0.94
+\end{verbatim}
+
+\subsection{MobileNetV2 Model}
+To improve the feature extraction capabilities, I used MobileNetV2 as a base model. The architecture consisted of:
+\begin{itemize}
+    \item \texttt{MobileNetV2} for feature extraction, leveraging pre-trained weights on ImageNet.
+    \item Additional layers: GlobalAveragePooling, Dropout, and Dense layers for classification.
+\end{itemize}
+The MobileNetV2 model achieved a higher accuracy of $97.08\%$ with the following metrics:
+\begin{verbatim}
+Confusion Matrix:
+[[ 59   0   0 ...   0   0   0]
+ [  0 714   0 ...   0   0   0]
+ [  0   3 737 ...   0   0   0]
+ ...
+ [  0   0   0 ...  79   0   0]
+ [  0   0   0 ...   0  54   0]
+ [  0   0   0 ...   0   6  75]]
+Accuracy: 97.08%
+Precision: 0.97
+Recall: 0.97
+F1 Score: 0.97
+\end{verbatim}
+
+\subsection{Benchmark Model Results}
+The benchmark model results were:
+\begin{verbatim}
+Confusion Matrix:
+[[ 59   1   0 ...   0   0   0]
+ [  0 712   1 ...   0   0   0]
+ [  0  11 734 ...   0   0   0]
+ ...
+ [  0   0   0 ...  87   0   0]
+ [  0   0   0 ...   0  45   0]
+ [  0   0   0 ...   0   0  89]]
+Accuracy: 96.49%
+Precision: 0.947
+Recall: 0.949
+F1 Score: 0.946
+\end{verbatim}
+
+\section{Data Augmentation}
+To improve generalization, I applied extensive data augmentation. The transformations included:
+\begin{itemize}
+    \item Random brightness adjustments.
+    \item Random contrast changes.
+    \item Random saturation variations.
+\end{itemize}
+Instead of preprocessing the images before training, I chose to perform in-line data augmentation during training. This approach leveraged GPU resources effectively, making the training process significantly faster compared to augmentation performed in the preprocessing stage.
+
+\section{Training Environment}
+Initially, I attempted to train the models using my local CPU, but due to the large size of the dataset and the complexity of the models, training times were prohibitively long. To address this issue, I pivoted to using Kaggle and Google Colab, which provided GPU resources. This switch allowed me to:
+\begin{itemize}
+    \item Increase the batch size to $64$.
+    \item Train for a higher number of epochs ($100$) as the model was still learning and the additional epochs continued to improve accuracy.
+\end{itemize}
+
+\section{Concurrency and Data Loading}
+Loading the dataset, which involved cropping and resizing, was time-consuming. To reduce the overhead, I employed concurrency using \texttt{ThreadPoolExecutor} to load images in parallel. This approach sped up the data loading significantly, making the training process smoother and more efficient.
+
+\section{Observations}
+The MobileNetV2-based model consistently outperformed the custom CNN. This can be attributed to:
+\begin{itemize}
+    \item \textbf{Superior Feature Extraction}: MobileNetV2, pre-trained on ImageNet, was better at extracting features from the traffic sign images compared to the custom CNN.
+    \item \textbf{Deeper Network}: MobileNetV2 is significantly deeper and more sophisticated compared to the custom model, allowing for better representation learning.
+\end{itemize}
+
+\subsection{Traffic Sign Naming}
+To further enhance the interpretability of the model, I mapped each class ID to its respective traffic sign name by consulting Ukrainian Traffic Rules. This mapping allowed for a more descriptive understanding of the model's predictions.
+
+\section{Evaluation and Comparison}
+The evaluation metrics used to compare both models included accuracy, precision, recall, F1 score, and confusion matrices.
+\begin{itemize}
+    \item The custom CNN achieved an accuracy of $94.30\%$, while the MobileNetV2 model achieved $97.08\%$.
+    \item Data augmentation and additional Dropout layers helped improve the generalization ability of both models.
+    \item Inline data augmentation, leveraging the GPU, significantly sped up the training process and resulted in a more diverse dataset being used for each epoch.
+\end{itemize}
+
+\section{Conclusion}
+Throughout this project, I experimented with different model architectures, data augmentation techniques, and computational environments. The MobileNetV2-based model emerged as the better-performing model, achieving $97.08\%$ accuracy, while the custom CNN achieved $94.30\%$. The decision to use a pre-trained model, coupled with inline data augmentation, concurrency for data loading, and the utilization of GPU resources, proved crucial in achieving high accuracy and efficient training times.
+
+The full code for the project can be found on GitHub: \url{https://github.com/sakibsadmanshajib/ELEC8900-CAV/} \newline
+The Kaggle notebook used for training can be accessed here: \url{https://www.kaggle.com/code/sakibsadmanshajib/cav-project}
+
+In the future, I aim to further optimize the model through hyperparameter tuning and explore additional pre-trained architectures to enhance performance even further.
+
+\end{document}
